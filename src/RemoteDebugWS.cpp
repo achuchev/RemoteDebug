@@ -249,12 +249,6 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t payloa
 			break;
 		case WStype_CONNECTED:               // if a new websocket connection is established
 		{
-#ifdef D // serial debug
-			IPAddress ip = WebSocketServer.remoteIP(num);
-			D("[%u] Connected from %d.%d.%d.%d url: %s", num, ip[0], ip[1], ip[2], ip[3],
-					payload);
-#endif
-
 			// Have in another connection
 			// One connection to reduce overheads
 
