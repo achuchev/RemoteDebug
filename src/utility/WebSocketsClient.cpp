@@ -674,44 +674,6 @@ void WebSocketsClient::handleHeader(WSclient_t * client, String * headerLine) {
 }
 
 void WebSocketsClient::connectedCb() {
-
-    DEBUG_WEBSOCKETS("[WS-Client] connected to %s:%u.\n", _host.c_str(), _port);
-
-#if (WEBSOCKETS_NETWORK_TYPE == NETWORK_ESP8266_ASYNC)
-    _client.tcp->onDisconnect(std::bind([](WebSocketsClient * c, AsyncTCPbuffer * obj, WSclient_t * client) -> bool {
-                        DEBUG_WEBSOCKETS("[WS-Server][%d] Disconnect client\n", client->num);
-                        client->status = WSC_NOT_CONNECTED;
-                        client->tcp = NULL;
-
-                        // reconnect
-                        c->asyncConnect();
-
-                        return true;
-                    }, this, std::placeholders::_1, &_client));
-#endif
-
-    _client.status = WSC_HEADER;
-
-#if (WEBSOCKETS_NETWORK_TYPE != NETWORK_ESP8266_ASYNC)
-    // set Timeout for readBytesUntil and readStringUntil
-    _client.tcp->setTimeout(WEBSOCKETS_TCP_TIMEOUT);
-#endif
-
-#if (WEBSOCKETS_NETWORK_TYPE == NETWORK_ESP8266)
-    _client.tcp->setNoDelay(true);
-
-    //if(_client.isSSL && _fingerprint.length()) {
-    //    if(!_client.ssl->verify(_fingerprint.c_str(), _host.c_str())) {
-    //        DEBUG_WEBSOCKETS("[WS-Client] certificate mismatch\n");
-    //        WebSockets::clientDisconnect(&_client, 1000);
-    //        return;
-    //    }
-    }
-#endif
-
-    // send Header to Server
-    sendHeader(&_client);
-
 }
 
 void WebSocketsClient::connectFailedCb() {
