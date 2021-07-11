@@ -83,6 +83,8 @@
 
 #include "RemoteDebugCfg.h"
 
+#define WEBSOCKET_DISABLED TRUE
+
 ///// Debug disable for compile to production/release ?
 ///// as nothing of RemotedDebug is compiled, zero overhead :-)
 
