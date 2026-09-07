@@ -45,7 +45,9 @@ WebSocketsServer::WebSocketsServer(uint16_t port, String origin, String protocol
     _mandatoryHttpHeaders = NULL;
     _mandatoryHttpHeaderCount = 0;
 
-    memset(&_clients[0], 0x00, (sizeof(WSclient_t) * WEBSOCKETS_SERVER_CLIENT_MAX));
+    for(uint8_t i = 0; i < WEBSOCKETS_SERVER_CLIENT_MAX; i++) {
+        _clients[i] = WSclient_t();
+    }
 }
 
 
@@ -468,8 +470,7 @@ bool WebSocketsServer::newClient(WEBSOCKETS_NETWORK_CLASS * TCPclient) {
 #endif
             client->status = WSC_HEADER;
 #if (WEBSOCKETS_NETWORK_TYPE == NETWORK_ESP8266) || (WEBSOCKETS_NETWORK_TYPE == NETWORK_ESP8266_ASYNC) || (WEBSOCKETS_NETWORK_TYPE == NETWORK_ESP32)
-            IPAddress ip = client->tcp->remoteIP();
-            DEBUG_WEBSOCKETS("[WS-Server][%d] new client from %d.%d.%d.%d\n", client->num, ip[0], ip[1], ip[2], ip[3]);
+            DEBUG_WEBSOCKETS("[WS-Server][%d] new client from %d.%d.%d.%d\n", client->num, client->tcp->remoteIP()[0], client->tcp->remoteIP()[1], client->tcp->remoteIP()[2], client->tcp->remoteIP()[3]);
 #else
             DEBUG_WEBSOCKETS("[WS-Server][%d] new client\n", client->num);
 #endif
@@ -629,7 +630,11 @@ void WebSocketsServer::handleNewClients(void) {
 
 #if (WEBSOCKETS_NETWORK_TYPE == NETWORK_ESP8266) || (WEBSOCKETS_NETWORK_TYPE == NETWORK_ESP32)
         // store new connection
+    #if (WEBSOCKETS_NETWORK_TYPE == NETWORK_ESP8266)
+        WEBSOCKETS_NETWORK_CLASS * tcpClient = new WEBSOCKETS_NETWORK_CLASS(_server->accept());
+    #else
         WEBSOCKETS_NETWORK_CLASS * tcpClient = new WEBSOCKETS_NETWORK_CLASS(_server->available());
+    #endif
 #else
         WEBSOCKETS_NETWORK_CLASS * tcpClient = new WEBSOCKETS_NETWORK_CLASS(_server->available());
 #endif
@@ -644,8 +649,7 @@ void WebSocketsServer::handleNewClients(void) {
         if(!ok) {
             // no free space to handle client
 #if (WEBSOCKETS_NETWORK_TYPE == NETWORK_ESP8266) || (WEBSOCKETS_NETWORK_TYPE == NETWORK_ESP32)
-            IPAddress ip = tcpClient->remoteIP();
-            DEBUG_WEBSOCKETS("[WS-Server] no free space new client from %d.%d.%d.%d\n", ip[0], ip[1], ip[2], ip[3]);
+            DEBUG_WEBSOCKETS("[WS-Server] no free space new client from %d.%d.%d.%d\n", tcpClient->remoteIP()[0], tcpClient->remoteIP()[1], tcpClient->remoteIP()[2], tcpClient->remoteIP()[3]);
 #else
             DEBUG_WEBSOCKETS("[WS-Server] no free space new client\n");
 #endif
