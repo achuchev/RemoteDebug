@@ -173,6 +173,16 @@ bool system_update_cpu_freq(uint8_t freq);
 
 #endif
 
+// ESP8266 deprecated WiFiServer.available() in favor of accept().
+// Keep available() for other cores to preserve compatibility.
+static WiFiClient rdServerAcceptClient(WiFiServer& server) {
+#if defined(ESP8266)
+	return server.accept();
+#else
+	return server.available();
+#endif
+}
+
 // Internal debug macro - recommended stay disable
 
 #define D(fmt, ...) 													// Without this
@@ -434,7 +444,7 @@ void RemoteDebug::handle() {
 			// Verify if the IP is same than actual conection
 
 			WiFiClient newClient; // @suppress("Abstract class cannot be instantiated")
-			newClient = TelnetServer.available();
+			newClient = rdServerAcceptClient(TelnetServer);
 			String ip = newClient.remoteIP().toString();
 
 			if (ip == TelnetClient.remoteIP().toString()) {
@@ -458,7 +468,7 @@ void RemoteDebug::handle() {
 
 			// New TCP client
 
-			TelnetClient = TelnetServer.available();
+			TelnetClient = rdServerAcceptClient(TelnetServer);
 
 			// Password request ? - 18/07/18
 
